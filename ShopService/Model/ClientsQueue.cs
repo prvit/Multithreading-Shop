@@ -9,33 +9,29 @@ namespace ShopService.Model
 {
     public class ClientsQueue
     {
-        private List<Client> _queue;
-
+        private const int FIRST_ELEMENT = 0;
+        private List<Client> queue;
         public List<Client> ClientsInQueue
         {
-            get { return this._queue; }
+            get { return this.queue; }
 
-            set { this._queue = value; }
+            set { this.queue = value; }
         }
-
         public void Push(Client newMember)
         {
             List<Client> tempQueue = ClientsInQueue;
             tempQueue.Add(newMember);
             ClientsInQueue = tempQueue;
         }
-        public void Pull()
+        public Client Pull()
         {
-            int count = ClientsInQueue.Count;
-            List<Client> tempQueue = ClientsInQueue;
-            tempQueue.RemoveAt(0);
-            ClientsInQueue = tempQueue;
+            Client deletedClient = ClientsInQueue.ElementAt(FIRST_ELEMENT);
+            ClientsInQueue.RemoveAt(FIRST_ELEMENT);
+            return deletedClient;
         }
-        public void Pull(int index)
+        public Client GetFirst()
         {
-            List<Client> tempQueue = ClientsInQueue;
-            tempQueue.RemoveAt(index);
-            ClientsInQueue = tempQueue;
+            return this.queue.ElementAt(FIRST_ELEMENT);
         }
     }
 }

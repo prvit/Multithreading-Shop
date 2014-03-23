@@ -49,19 +49,39 @@ namespace ShopService.Management
             Thread thread = new Thread(AddNewClients);
             thread.Start(countOfNewClients);
         }
+        private void StartOrganizeThread()
+        {
+            organizingThread.Start();
+        }
         private void OrganizeClients()
         {
-
+            lock (this.shopClients)
+            {
+                while (shopClients.ClientsInQueue.Count > 0)
+                {
+                    Client client = shopClients.GetFirst();
+                    List<int> busyTime = new List<int>();
+                    foreach (var stand in shop.GetStandsClientWasNotBefore(client))
+                    {
+                        busyTime.Add(stand.GetCountOfClients * stand.TimeOfService);    // TODO better algo
+                    }
+                    int indexOfStandToAddClient = IndexOfMin(busyTime);
+                    int indexOfVendorToAddClient = shop[indexOfStandToAddClient].GetIndexOfVendorWithMinClients();
+                    this.shop[indexOfStandToAddClient][indexOfVendorToAddClient].Queue.Push(client);
+                    Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[indexOfStandToAddClient][indexOfVendorToAddClient].VendorID);
+                    shopClients.Pull();
+                }
+            }
         }
-
-
-        
         private void AddNewClients(object countOfNewClients)
         {
             int count = (int)countOfNewClients;
-            for (int i = 0; i < count; i++)
+            lock (this.shopClients)
             {
-                shopClients.Push(new Client(this.shop));
+                for (int i = 0; i < count; i++)
+                {
+                    shopClients.Push(new Client(this.shop));
+                }
             }
         }
         private int IndexOfMin(List<int> list)

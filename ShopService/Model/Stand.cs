@@ -82,6 +82,12 @@ namespace ShopService.Model
             vendor.TimeOfService = this.time_of_service;
             vendors.Add(vendor);
         }
+        public void AddVendor()
+        {
+            Vendor vendor = new Vendor(this);
+            vendor.TimeOfService = this.time_of_service;
+            vendors.Add(vendor);
+        }
         public void RemoveVendor(int Id)
         {
             var vendor = vendors.FirstOrDefault(vend => vend.VendorID == Id);
@@ -90,7 +96,6 @@ namespace ShopService.Model
                 vendors.Remove(vendor);                
             }
         }
-
         public int GetIndexOfVendorWithMinClients()
         {
             int minCount = this.vendors[0].CountOfClients;
@@ -119,6 +124,7 @@ namespace ShopService.Model
             }
         }
 
+        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator)GetEnumerator();
@@ -176,5 +182,6 @@ namespace ShopService.Model
                 }
             }
         }
+        #endregion
     }
 }

@@ -17,7 +17,6 @@ namespace ShopService.Model
                 return this.stands;
             }
         }
-
         public int CountOfStands
         {
             get
@@ -25,22 +24,19 @@ namespace ShopService.Model
                 return stands.Count();
             }
         }
-
         public Shop(int countOfStands)
         {
             stands = new List<Stand>(countOfStands);
         }
-
         public void AddStand(int standTimeOfService)
         {
             stands.Add(new Stand(standTimeOfService));
         }
-
-        public void RemoveStand(int index)
+        public void RemoveStand(int standId)
         {
-            stands.RemoveAt(index);
+            var standToRemove = this.stands.FirstOrDefault(stand => stand.StandId == standId);
+            stands.Remove(standToRemove);
         }
-
         public Stand this[int ID]
         {
             get
@@ -48,7 +44,6 @@ namespace ShopService.Model
                 return stands.FirstOrDefault(stand => stand.StandId == ID);
             }
         }
-
         public List<Stand> GetStandsClientWasNotBefore(Client client)
         {
             List<Stand> listOfStands = new List<Stand>();
@@ -61,7 +56,12 @@ namespace ShopService.Model
             }
             return listOfStands;
         }
+        public void Clear()
+        {
+            this.stands.Clear();
+        }
 
+        #region IEnumerable
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator)GetEnumerator();
@@ -119,5 +119,6 @@ namespace ShopService.Model
                 }
             }
         }
+        #endregion
     }
 }
