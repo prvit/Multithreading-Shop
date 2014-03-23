@@ -8,7 +8,7 @@ namespace ShopService.Model
 {
     public class Vendor
     {
-        static int idCount = 0;
+        private static int idCount = 0;
         private int vendorID;
         public int VendorID
         {
@@ -55,15 +55,22 @@ namespace ShopService.Model
             }
         }
 
-        public int StandId;
+        private int vendorStandId;
+        public int VendorStandId
+        {
+            get
+            {
+                return this.vendorStandId;
+            }
+        }
 
-        public Vendor(int timeOfService, int standId)
+        public Vendor(Stand stand)
         {
             idCount++;
             this.vendorID = idCount;
-            this.time_of_service = timeOfService;
+            this.TimeOfService = stand.TimeOfService;
             this.queue = new ClientsQueue();
-            this.StandId = standId;
+            this.vendorStandId = stand.StandId;
         }
     }
 }

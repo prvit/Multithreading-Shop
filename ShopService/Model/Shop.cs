@@ -45,7 +45,7 @@ namespace ShopService.Model
         {
             get
             {
-                return stands.FirstOrDefault(stand => stand.StandID == ID);
+                return stands.FirstOrDefault(stand => stand.StandId == ID);
             }
         }
 
@@ -54,7 +54,7 @@ namespace ShopService.Model
             List<Stand> listOfStands = new List<Stand>();
             foreach (var stand in this)
             {
-                if (client.VisitedStands[stand.StandID] == false)
+                if (client.VisitedStands[stand.StandId] == false)
                 {
                     listOfStands.Add(stand);
                 }

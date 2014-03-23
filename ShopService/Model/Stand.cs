@@ -10,13 +10,13 @@ namespace ShopService.Model
 {
     public class Stand : IEnumerable
     {
-        static int idCount = 0;
-        private int standID;
-        public int StandID
+        private static int idCount = 0;
+        private int standId;
+        public int StandId
         {
             get
             {
-                return standID;
+                return standId;
             }
         }
 
@@ -64,7 +64,7 @@ namespace ShopService.Model
         public Stand()
         {
             idCount++;
-            this.standID = idCount;
+            this.standId = idCount;
             this.vendors = new List<Vendor>();
             this.time_of_service = -1;
         }
@@ -72,7 +72,7 @@ namespace ShopService.Model
         public Stand(int timeOfService)
         {
             idCount++;
-            this.standID = idCount;
+            this.standId = idCount;
             this.vendors = new List<Vendor>();
             this.time_of_service = timeOfService;
         }

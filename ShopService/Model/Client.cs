@@ -8,7 +8,7 @@ namespace ShopService.Model
 {
     public class Client
     {
-        static int idCount = 0;
+        private static int idCount = 0;
         private int clientID;
         public int ClientID
         {
@@ -26,7 +26,10 @@ namespace ShopService.Model
                 return this.visitedStands;
             }
         }
-
+        public bool WasStandVisited(int standId)
+        {
+            return this.visitedStands[standId];
+        }
         public Client(Shop shop)
         {
             idCount++;
@@ -35,7 +38,7 @@ namespace ShopService.Model
             visitedStands = new Dictionary<int, bool>();
             foreach (var stand in shop)
             {
-                visitedStands.Add(stand.StandID, false);
+                visitedStands.Add(stand.StandId, false);
             }
         }
     }

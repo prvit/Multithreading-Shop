@@ -10,8 +10,15 @@ namespace ShopService.Management
 {
     class ShopManager
     {
+        private ClientsQueue shopClients;
+        public ClientsQueue ShopClients
+        {
+            get
+            {
+                return this.shopClients;
+            }
+        }
         private Shop shop;
-
         public Shop Shop
         {
             set
@@ -31,111 +38,50 @@ namespace ShopService.Management
             }
         }
 
-        private List<Client> newClients;
-        private List<Client> oldClients;
+        private Thread organizingThread;
 
-        public List<Client> NewClients
+        public ShopManager()
         {
-            get
-            {
-                return this.newClients;
-            }
+            organizingThread = new Thread(OrganizeClients);
         }
-        public ShopManager(int countOfShopStands)
+        public void PushClients(int countOfNewClients)
         {
-            shop = new Shop(countOfShopStands);
-            newClients = new List<Client>();
-            oldClients = new List<Client>();
+            Thread thread = new Thread(AddNewClients);
+            thread.Start(countOfNewClients);
         }
-
-        public void PushClients(int numberOfClients)
+        private void OrganizeClients()
         {
-            for (int i = 0; i < numberOfClients; i++)
-            {
-                newClients.Add(new Client(this.shop));
-            }
 
-            if (oldClients.Count == 0)
-            {
-                oldClients = newClients;
-                HandleOldClients();
-            }
-            else
-            {
-                HandleOldClients();
-                oldClients = newClients;
-                HandleOldClients();
-            }
-            // TODO handle clients
         }
 
-        private void HandleOldClients()
-        {
-            foreach (var client in oldClients)
-            {
-                List<int> busyTime = new List<int>();
-                foreach (var stand in shop)
-                {
-                    busyTime.Add(stand.GetCountOfClients * stand.TimeOfService);
-                }
-                int indexOfStandToAddClient = IndexOfMin(busyTime);
-                int indexOfVendorToAddClient = shop[indexOfStandToAddClient].GetIndexOfVendorWithMinClients();
-                this.shop[indexOfStandToAddClient][indexOfVendorToAddClient].Queue.Push(client);
-            }
-            oldClients.Clear();
-        }
 
-        private List<Thread> threads = new List<Thread>();
-
-        public void DoShopWork()
+        
+        private void AddNewClients(object countOfNewClients)
         {
-            foreach (var stand in shop)
+            int count = (int)countOfNewClients;
+            for (int i = 0; i < count; i++)
             {
-                foreach (var vendor in stand)
-                {
-                    threads.Add(new Thread(Run));
-                }
-            }
-            foreach (var stand in shop)
-            {
-                for (int i = 0; i < threads.Count; i++)
-                {
-                    threads[i].Start(stand[i]);
-                }
-            }
-            
-        }
-
-        protected void Run(object vendor)
-        {
-            Vendor vndr = (Vendor)vendor;
-            for (int i = 0; i < vndr.CountOfClients; i++)
-            {
-                Thread.Sleep(vndr.TimeOfService);
-                vndr.Queue.ClientsInQueue.ElementAt(0).VisitedStands[vndr.StandId] = true;
-                oldClients.Add(vndr.Queue.ClientsInQueue.ElementAt(0));
-                vndr.Queue.Pull();
+                shopClients.Push(new Client(this.shop));
             }
         }
-
-        private int IndexOfMin(List<int> self)
+        private int IndexOfMin(List<int> list)
         {
-            if (self == null)
+            if (list == null)
             {
                 throw new ArgumentNullException("List is null.");
             }
-            if (self.Count == 0)
+            if (list.Count == 0)
             {
                 throw new ArgumentException("List is empty.");
             }
 
-            int min = self[0];
+            int min = list[0];
             int minIndex = 0;
-            for (int i = 1; i < self.Count; ++i)
+            for (int i = 1; i < list.Count; ++i)
             {
-                if (self[i] < min)
+                if (list[i] < min)
                 {
-                    min = self[i];
+                    min = list[i];
                     minIndex = i;
                 }
             }
