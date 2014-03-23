@@ -17,7 +17,6 @@ namespace ShopService.Model
                 return vendorID;
             }
         }
-
         private int time_of_service;
         public int TimeOfService
         {

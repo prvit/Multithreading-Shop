@@ -37,11 +37,11 @@ namespace ShopService.Management
                 return this.shop;
             }
         }
-
         private Thread organizingThread;
-
+        Dictionary<int, Thread> vendorsThreads;
         public ShopManager()
         {
+            shopClients = new ClientsQueue();
             organizingThread = new Thread(OrganizeClients);
         }
         public void PushClients(int countOfNewClients)
@@ -60,18 +60,37 @@ namespace ShopService.Management
                 while (shopClients.ClientsInQueue.Count > 0)
                 {
                     Client client = shopClients.GetFirst();
-                    List<int> busyTime = new List<int>();
+                    Dictionary<int, int> busyStandsTime = new Dictionary<int, int>();
                     foreach (var stand in shop.GetStandsClientWasNotBefore(client))
                     {
-                        busyTime.Add(stand.GetCountOfClients * stand.TimeOfService);    // TODO better algo
+                        busyStandsTime.Add(stand.StandId, stand.GetCountOfClients * stand.TimeOfService);// TODO better algo
                     }
-                    int indexOfStandToAddClient = IndexOfMin(busyTime);
-                    int indexOfVendorToAddClient = shop[indexOfStandToAddClient].GetIndexOfVendorWithMinClients();
-                    this.shop[indexOfStandToAddClient][indexOfVendorToAddClient].Queue.Push(client);
-                    Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[indexOfStandToAddClient][indexOfVendorToAddClient].VendorID);
-                    shopClients.Pull();
+                    int idOfStandToAddClient = KeyOfMin(busyStandsTime);
+                    int indexOfVendorToAddClient = shop[idOfStandToAddClient].GetIndexOfVendorWithMinClients();
+                    this.shop[idOfStandToAddClient][indexOfVendorToAddClient].Queue.Push(client);
+                    Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[idOfStandToAddClient][indexOfVendorToAddClient].VendorID);
+                    Client pulledClient = shopClients.Pull();
+                    //Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[idOfStandToAddClient][indexOfVendorToAddClient].VendorID);
+
                 }
             }
+        }
+        public void StartProceedingThreads()
+        {
+            foreach (var stand in shop)
+            {
+                foreach (var vendor in stand)
+                {
+                    if (!vendorsThreads.ContainsKey(vendor.VendorID))
+                    {
+                        vendorsThreads.Add(vendor.VendorID, new Thread(ProceedeClientsByVendor));
+                    }
+                }
+            }
+        }
+        private void ProceedeClientsByVendor(object vendorID)
+        {
+
         }
         private void AddNewClients(object countOfNewClients)
         {
@@ -80,33 +99,34 @@ namespace ShopService.Management
             {
                 for (int i = 0; i < count; i++)
                 {
-                    shopClients.Push(new Client(this.shop));
+                    Client client = new Client(this.shop); 
+                    shopClients.Push(client);
+                    Console.WriteLine("Client {0} was pushed to shop.", client.ClientID);
                 }
             }
         }
-        private int IndexOfMin(List<int> list)
+        private int KeyOfMin(Dictionary<int, int> dict)
         {
-            if (list == null)
+            if (dict == null)
             {
-                throw new ArgumentNullException("List is null.");
+                throw new ArgumentNullException("Dictionary is null.");
             }
-            if (list.Count == 0)
+            if (dict.Count == 0)
             {
-                throw new ArgumentException("List is empty.");
+                throw new ArgumentException("Dictionary is empty.");
             }
 
-            int min = list[0];
-            int minIndex = 0;
-            for (int i = 1; i < list.Count; ++i)
+            int minValue = dict[0];
+            int minKey = 0;
+            for (int i = 1; i < dict.Count; ++i)
             {
-                if (list[i] < min)
+                if (dict[i] < minValue)
                 {
-                    min = list[i];
-                    minIndex = i;
+                    minValue = dict[i];
+                    minKey = i;
                 }
             }
-            return minIndex;
+            return minKey;
         }
-
     }
 }

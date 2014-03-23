@@ -17,7 +17,6 @@ namespace ShopService.Model
                 return clientID; 
             }
         }
-
         private Dictionary<int, bool> visitedStands;
         public Dictionary<int, bool> VisitedStands
         {
