@@ -17,7 +17,9 @@ namespace ShopService
             Logger.LogInfo("Shop started");
             Console.WriteLine("Shop started.");
 
+
             ShopManager shopManager = new ShopManager();
+            Timer timer = new Timer(close, shopManager, 20000, 40000);
 
             shopManager.TestShopFill();
             shopManager.PushClients(50);
@@ -33,6 +35,11 @@ namespace ShopService
             Thread.Sleep(5000);
             ShopManager shopManager = (ShopManager)sm;
             shopManager.PushClients(100);
+        }
+        static void close(object state)
+        {
+            ShopManager sm = (ShopManager)state;
+            sm.CloseShop();
         }
     }
 }
