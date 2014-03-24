@@ -96,19 +96,19 @@ namespace ShopService.Model
                 vendors.Remove(vendor);                
             }
         }
-        public int GetIndexOfVendorWithMinClients()
+        public int GetIdOfVendorWithMinClients()
         {
             int minCount = this.vendors[0].CountOfClients;
-            int minIndex = 0;
+            int minId = this.vendors[0].VendorID;
             for (int i = 1; i < this.vendors.Count; ++i)
             {
                 if (this.vendors[i].CountOfClients < minCount)
                 {
                     minCount = this.vendors[i].CountOfClients;
-                    minIndex = i;
+                    minId = this.vendors[i].VendorID;
                 }
             }
-            return minIndex;
+            return minId;
         }
 
         public void Clear()
@@ -116,11 +116,11 @@ namespace ShopService.Model
             vendors.Clear();
         }
 
-        public Vendor this[int index]
+        public Vendor this[int ID]
         {
             get
             {
-                return vendors.ElementAt(index);
+                return vendors.FirstOrDefault(vendor => vendor.VendorID == ID);
             }
         }
 

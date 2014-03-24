@@ -17,6 +17,10 @@ namespace ShopService.Model
 
             set { this.queue = value; }
         }
+        public ClientsQueue()
+        {
+            queue = new List<Client>();
+        }
         public void Push(Client newMember)
         {
             List<Client> tempQueue = ClientsInQueue;
@@ -31,7 +35,7 @@ namespace ShopService.Model
         }
         public Client GetFirst()
         {
-            return this.queue.ElementAt(FIRST_ELEMENT);
+            return this.queue.First();
         }
     }
 }

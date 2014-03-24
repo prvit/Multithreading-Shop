@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ShopService.Model;
 using System.Threading;
-
+using System.IO;
+using ShopService.Utilities;
 namespace ShopService.Management
 {
     class ShopManager
@@ -41,37 +42,67 @@ namespace ShopService.Management
         Dictionary<int, Thread> vendorsThreads;
         public ShopManager()
         {
+            shop = new Model.Shop(15);
             shopClients = new ClientsQueue();
             organizingThread = new Thread(OrganizeClients);
+            vendorsThreads = new Dictionary<int, Thread>();
         }
         public void PushClients(int countOfNewClients)
         {
             Thread thread = new Thread(AddNewClients);
             thread.Start(countOfNewClients);
+            StartOrganizeThread();
         }
-        private void StartOrganizeThread()
+        public void StartOrganizeThread()
         {
-            organizingThread.Start();
+            if (!organizingThread.IsAlive)
+            {
+                organizingThread.Start();                
+            }
         }
         private void OrganizeClients()
         {
-            lock (this.shopClients)
+            while(true)
             {
-                while (shopClients.ClientsInQueue.Count > 0)
+                if (shopClients.ClientsInQueue.Count > 0)
                 {
                     Client client = shopClients.GetFirst();
                     Dictionary<int, int> busyStandsTime = new Dictionary<int, int>();
-                    foreach (var stand in shop.GetStandsClientWasNotBefore(client))
+                    if (client == null)
                     {
-                        busyStandsTime.Add(stand.StandId, stand.GetCountOfClients * stand.TimeOfService);// TODO better algo
+                        
                     }
-                    int idOfStandToAddClient = KeyOfMin(busyStandsTime);
-                    int indexOfVendorToAddClient = shop[idOfStandToAddClient].GetIndexOfVendorWithMinClients();
-                    this.shop[idOfStandToAddClient][indexOfVendorToAddClient].Queue.Push(client);
-                    Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[idOfStandToAddClient][indexOfVendorToAddClient].VendorID);
-                    Client pulledClient = shopClients.Pull();
-                    //Console.WriteLine("Client {0} was sent to {1} Vendor.", client.ClientID, this.shop[idOfStandToAddClient][indexOfVendorToAddClient].VendorID);
+                    List<Stand> unvisitedStands = shop.GetStandsClientWasNotBefore(client);
+                    if (unvisitedStands.Count > 0)
+                    {
+                        lock (shopClients)
+                        {
+                            foreach (var stand in unvisitedStands)
+                            {
+                                busyStandsTime.Add(stand.StandId, stand.GetCountOfClients * stand.TimeOfService);// TODO better algo
+                            }
+                            int idOfStandToAddClient = KeyOfMin(busyStandsTime);
+                            if (client.ClientID == 11)
+                            {
 
+                            }
+                            int idOfVendorToAddClient = shop[idOfStandToAddClient].GetIdOfVendorWithMinClients();
+                            this.shop[idOfStandToAddClient][idOfVendorToAddClient].Queue.Push(client);
+                            string line = String.Format("Client {0} was sent to {1} Vendor. (Stand {2})", client.ClientID, 
+                                this.shop[idOfStandToAddClient][idOfVendorToAddClient].VendorID, this.shop[idOfStandToAddClient][idOfVendorToAddClient].VendorStandId);
+                            Logger.LogInfo(line);
+                            Console.WriteLine(line);
+                            Client pulledClient = shopClients.Pull();
+                        }
+                    }
+                    else
+                    {
+                        Client pulledClient = shopClients.Pull();
+                        string line = String.Format("Client {0} was pulled from shop.", pulledClient.ClientID);
+                        Logger.LogInfo(line);
+                        Console.WriteLine(line);
+
+                    }
                 }
             }
         }
@@ -85,12 +116,31 @@ namespace ShopService.Management
                     {
                         vendorsThreads.Add(vendor.VendorID, new Thread(ProceedeClientsByVendor));
                     }
+                    if (!vendorsThreads[vendor.VendorID].IsAlive)
+	                {
+		                vendorsThreads[vendor.VendorID].Start(vendor);
+	                }
                 }
             }
         }
-        private void ProceedeClientsByVendor(object vendorID)
+        private void ProceedeClientsByVendor(object vendor)
         {
-
+            Vendor currVendor = (Vendor)vendor;
+            int time = currVendor.TimeOfService;
+            while(true)
+            {
+                if (currVendor.CountOfClients > 0)
+                {
+                    Thread.Sleep(time*1000);
+                    Client pulledClient = this.shop[currVendor.VendorStandId][currVendor.VendorID].Queue.Pull();
+                    pulledClient.VisitedStands[currVendor.VendorStandId] = true;
+                    string line = String.Format("Client {0} was pulled from {1} Vendor queue. (Stand {2})", pulledClient.ClientID, currVendor.VendorID, currVendor.VendorStandId);
+                    Logger.LogInfo(line);
+                    Console.WriteLine(line);
+                    this.shopClients.Push(pulledClient);
+                }
+            }
+            //vendorsThreads[currVendor.VendorID].Abort();
         }
         private void AddNewClients(object countOfNewClients)
         {
@@ -101,7 +151,9 @@ namespace ShopService.Management
                 {
                     Client client = new Client(this.shop); 
                     shopClients.Push(client);
-                    Console.WriteLine("Client {0} was pushed to shop.", client.ClientID);
+                    string line = String.Format("Client {0} was pushed to shop.", client.ClientID);
+                    Logger.LogInfo(line);
+                    Console.WriteLine(line);
                 }
             }
         }
@@ -115,18 +167,35 @@ namespace ShopService.Management
             {
                 throw new ArgumentException("Dictionary is empty.");
             }
-
-            int minValue = dict[0];
-            int minKey = 0;
-            for (int i = 1; i < dict.Count; ++i)
+            var first = dict.OrderBy(kvp => kvp.Key).First();
+            int minValue = first.Value;
+            int minKey = first.Key;
+            foreach (var item in dict)
             {
-                if (dict[i] < minValue)
+                if (item.Value < minValue)
                 {
-                    minValue = dict[i];
-                    minKey = i;
+                    minValue = item.Value;
+                    minKey = item.Key;
                 }
             }
             return minKey;
+        }
+        public void TestShopFill()
+        {
+            Random rand = new Random();
+
+            for (int i = 1; i <= 10; i++)
+			{
+                int j = rand.Next(1, 10);
+                this.shop.AddStand(j);
+			}
+            foreach (var stand in shop)
+            {
+                for (int i = 0; i < rand.Next(1,5); i++)
+                {
+                    stand.AddVendor();                    
+                }
+            }
         }
     }
 }
