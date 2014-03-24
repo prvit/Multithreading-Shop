@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShopService.Model;
+using System.Collections;
 
 namespace ShopService.Model
 {
-    public class ClientsQueue
+    public class ClientsQueue : IEnumerable
     {
         private const int FIRST_ELEMENT = 0;
         private List<Client> queue;
@@ -37,5 +38,65 @@ namespace ShopService.Model
         {
             return this.queue.First();
         }
+
+        #region IEnumerable
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator)GetEnumerator();
+        }
+
+        public ClientQueueEnum GetEnumerator()
+        {
+            return new ClientQueueEnum(this.queue);
+        }
+
+        public class ClientQueueEnum : IEnumerator
+        {
+            private List<Client> queue;
+
+            // Enumerators are positioned before the first element
+            // until the first MoveNext() call.
+            int position = -1;
+
+            public ClientQueueEnum(List<Client> queue)
+            {
+                this.queue = queue;
+            }
+
+            public bool MoveNext()
+            {
+                position++;
+                return (position < queue.Count);
+            }
+
+            public void Reset()
+            {
+                position = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+
+            public Client Current
+            {
+                get
+                {
+                    try
+                    {
+                        return queue[position];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

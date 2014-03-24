@@ -7,9 +7,10 @@ using ShopService.Model;
 using System.Threading;
 using System.IO;
 using ShopService.Utilities;
+
 namespace ShopService.Management
 {
-    class ShopManager
+    public class ShopManager
     {
         private ClientsQueue shopClients;
         public ClientsQueue ShopClients
@@ -41,13 +42,15 @@ namespace ShopService.Management
         private Thread organizingThread;
         Dictionary<int, Thread> vendorsThreads;
         private bool isShopClosing;
-        public ShopManager()
+        TextBlockLogger logger;
+        public ShopManager(TextBlockLogger _logger)
         {
             shop = new Model.Shop(15);
             shopClients = new ClientsQueue();
             organizingThread = new Thread(OrganizeClients);
             vendorsThreads = new Dictionary<int, Thread>();
             isShopClosing = false;
+            logger = _logger;
             StartOrganizeThread();
         }
         public void PushClients(int countOfNewClients)
@@ -75,10 +78,6 @@ namespace ShopService.Management
                 {
                     Client client = shopClients.GetFirst();
                     Dictionary<int, int> busyStandsTime = new Dictionary<int, int>();
-                    if (client == null)
-                    {
-                        
-                    }
                     List<Stand> unvisitedStands = shop.GetStandsClientWasNotBefore(client);
                     if (unvisitedStands.Count > 0)
                     {
@@ -97,6 +96,10 @@ namespace ShopService.Management
                             this.shop[idOfStandToAddClient][idOfVendorToAddClient].Queue.Push(client);
                             string line = String.Format("Client {0} was sent to {1} Vendor queue. (Stand {2})", client.ClientID, 
                                 this.shop[idOfStandToAddClient][idOfVendorToAddClient].VendorID, this.shop[idOfStandToAddClient][idOfVendorToAddClient].VendorStandId);
+                            if (logger != null)
+                            {
+                                logger.InfoFormat(line);
+                            }
                             Logger.LogInfo(line);
                             Console.WriteLine(line);
                             Client pulledClient = shopClients.Pull();
@@ -106,6 +109,10 @@ namespace ShopService.Management
                     {
                         Client pulledClient = shopClients.Pull();
                         string line = String.Format("Client {0} quit shop.", pulledClient.ClientID);
+                        if (logger != null)
+                        {
+                            logger.InfoFormat(line);
+                        }
                         Logger.LogInfo(line);
                         Console.WriteLine(line);
 
@@ -118,6 +125,10 @@ namespace ShopService.Management
                 {
                     Client pulledClient = shopClients.Pull();
                     string line = String.Format("Client {0} quit shop.", pulledClient.ClientID);
+                    if (logger != null)
+                    {
+                        logger.InfoFormat(line);
+                    }
                     Logger.LogInfo(line);
                     Console.WriteLine(line);
                 }
@@ -152,18 +163,30 @@ namespace ShopService.Management
                     Client pulledClient = this.shop[currVendor.VendorStandId][currVendor.VendorID].Queue.Pull();
                     pulledClient.VisitedStands[currVendor.VendorStandId] = true;
                     string line = String.Format("Client {0} was served by {1} Vendor. (Stand {2})", pulledClient.ClientID, currVendor.VendorID, currVendor.VendorStandId);
+                    if (logger != null)
+                    {
+                        logger.InfoFormat(line);
+                    }
                     Logger.LogInfo(line);
                     Console.WriteLine(line);
                     if (!isShopClosing)
                     {
                         this.shopClients.Push(pulledClient);
                         string ln = String.Format("Client {0} was sent to overall queue.", pulledClient.ClientID);
+                        if (logger != null)
+                        {
+                            logger.InfoFormat(ln);
+                        }
                         Logger.LogInfo(ln);
                         Console.WriteLine(ln);
                     }
                     else
                     {
                         string ln = String.Format("Client {0} quit a shop.", pulledClient.ClientID);
+                        if (logger != null)
+                        {
+                            logger.InfoFormat(ln);
+                        }
                         Logger.LogInfo(ln);
                         Console.WriteLine(ln);
                     }
@@ -181,6 +204,10 @@ namespace ShopService.Management
                     Client client = new Client(this.shop); 
                     shopClients.Push(client);
                     string line = String.Format("Client {0} was pushed to shop.", client.ClientID);
+                    if (logger != null)
+                    {
+                        logger.InfoFormat(line);
+                    }
                     Logger.LogInfo(line);
                     Console.WriteLine(line);
                 }

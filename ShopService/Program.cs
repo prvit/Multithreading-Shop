@@ -18,13 +18,13 @@ namespace ShopService
             Console.WriteLine("Shop started.");
 
 
-            ShopManager shopManager = new ShopManager();
-            Timer timer = new Timer(close, shopManager, 20000, 40000);
+            //ShopManager shopManager = new ShopManager
+            //Timer timer = new Timer(close, shopManager, 20000, 40000);
 
-            shopManager.TestShopFill();
-            shopManager.PushClients(50);
-            shopManager.StartOrganizeThread();
-            shopManager.StartProceedingThreads();
+            //shopManager.TestShopFill();
+            //shopManager.PushClients(50);
+            //shopManager.StartOrganizeThread();
+            //shopManager.StartProceedingThreads();
             //shopManager.PushClients(100);
             //shopManager.PushClients(100);
 
