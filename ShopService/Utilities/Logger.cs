@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ShopService.Utilities
 {
@@ -11,6 +12,7 @@ namespace ShopService.Utilities
     {
         private static string LOG_FILE = "shop.log";
         private static string sLogFormat;
+        private static System.Windows.Forms.RichTextBox rtb;
 
         public Logger()
         {    
@@ -52,6 +54,14 @@ namespace ShopService.Utilities
             return;
         }
 
+        public static void SetUpLogFile(string path, System.Windows.Forms.RichTextBox richtextbox)
+        {
+            LOG_FILE = path + "\\" + LOG_FILE;
+            CreateFile();
+            rtb = richtextbox;
+            return;
+        }
+
         public static void SetUpLogFile(string path, int fileSizeLimit)
         {
             LOG_FILE = path + "\\" + LOG_FILE;
@@ -70,6 +80,18 @@ namespace ShopService.Utilities
             sLogFormat = DateTime.Now.ToShortDateString().ToString() + " " + DateTime.Now.ToLongTimeString().ToString() + " ==> ";
             string m = sLogFormat + "INFO : " + message;
             writeLog(m);
+            if (rtb != null)
+            {
+                if (rtb.InvokeRequired)
+                {
+                    rtb.Invoke(new Action(() => rtb.AppendText(m + Environment.NewLine)));
+                }
+                else
+                {
+                    rtb.AppendText(m + Environment.NewLine);
+
+                }
+            }
         }
 
         public static void LogError(String message)
