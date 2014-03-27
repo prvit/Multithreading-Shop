@@ -61,20 +61,35 @@ namespace ShopService.Model
             }
         }
 
+        private int price;
+        public int Price
+        {
+            get
+            {
+                return this.price;
+            }
+            set
+            {
+                price = value;
+            }
+        }
+
         public Stand()
         {
             idCount++;
             this.standId = idCount;
             this.vendors = new List<Vendor>();
             this.time_of_service = -1;
+            this.price = -1;
         }
 
-        public Stand(int timeOfService)
+        public Stand(int timeOfService, int price)
         {
             idCount++;
             this.standId = idCount;
             this.vendors = new List<Vendor>();
             this.time_of_service = timeOfService;
+            this.price = price;
         }
 
         public void AddVendor(Vendor vendor)

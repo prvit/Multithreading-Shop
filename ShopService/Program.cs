@@ -28,18 +28,20 @@ namespace ShopService
             //shopManager.PushClients(100);
             //shopManager.PushClients(100);
 
-            Console.Read();
-        }
-        static private void Push100(object sm)
-        {
-            Thread.Sleep(5000);
-            ShopManager shopManager = (ShopManager)sm;
-            shopManager.PushClients(100);
-        }
-        static void close(object state)
-        {
-            ShopManager sm = (ShopManager)state;
-            sm.CloseShop();
+            //        Console.Read();
+            //    }
+            //    static private void Push100(object sm)
+            //    {
+            //        Thread.Sleep(5000);
+            //        ShopManager shopManager = (ShopManager)sm;
+            //        shopManager.PushClients(100);
+            //    }
+            //    static void close(object state)
+            //    {
+            //        ShopManager sm = (ShopManager)state;
+            //        sm.CloseShop();
+            //    }
+            //}
         }
     }
 }

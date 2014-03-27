@@ -28,9 +28,9 @@ namespace ShopService.Model
         {
             stands = new List<Stand>(countOfStands);
         }
-        public void AddStand(int standTimeOfService)
+        public void AddStand(int standTimeOfService, int price)
         {
-            stands.Add(new Stand(standTimeOfService));
+            stands.Add(new Stand(standTimeOfService, price));
         }
         public void RemoveStand(int standId)
         {

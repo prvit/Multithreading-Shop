@@ -34,6 +34,25 @@ namespace ShopService.Model
             ClientsInQueue.RemoveAt(FIRST_ELEMENT);
             return deletedClient;
         }
+        public void Pull(Client client)
+        {
+            ClientsInQueue.Remove(client);
+        }
+        public Client GetMostSuitableClient()
+        {
+            lock (ClientsInQueue)
+            {
+                Client suitableClient = ClientsInQueue.ElementAt(FIRST_ELEMENT);
+                foreach (var client in ClientsInQueue)
+                {
+                    if (client.VisitedStands.Count > suitableClient.VisitedStands.Count)
+                    {
+                        suitableClient = client;
+                    }
+                }
+                return suitableClient;
+            }
+        }
         public Client GetFirst()
         {
             return this.queue.First();
